@@ -43,8 +43,8 @@ _build:
 	@set -eu; \
 	for dir in $(BUILD_DIRS); do \
 		if [ -f $$dir/pyproject.toml ]; then \
-			name=$$(python -c "import tomllib; print(tomllib.load(open('$$dir/pyproject.toml', 'rb'))['project']['name'])"); \
-			version=$$(python -c "import tomllib; print(tomllib.load(open('$$dir/pyproject.toml', 'rb'))['project']['version'])"); \
+			name=$$(uv run --isolated --no-project --python 3.13 python -c "import sys, tomllib; print(tomllib.load(open(sys.argv[1], 'rb'))['project']['name'])" "$$dir/pyproject.toml") || exit 1; \
+			version=$$(uv run --isolated --no-project --python 3.13 python -c "import sys, tomllib; print(tomllib.load(open(sys.argv[1], 'rb'))['project']['version'])" "$$dir/pyproject.toml") || exit 1; \
 			echo "Building $$dir: $$name==$$version"; \
 			if [ -d $$dir/oracle/*_mcp_server ]; then \
 				init_py_file=$$(echo $$dir/oracle/*_mcp_server/__init__.py); \
@@ -167,8 +167,8 @@ verify-published:
 	@set -eu; \
 	for dir in $(RELEASE_DIRS); do \
 		if [ -f $$dir/pyproject.toml ]; then \
-			name=$$(python -c "import tomllib; print(tomllib.load(open('$$dir/pyproject.toml', 'rb'))['project']['name'])"); \
-			version=$$(python -c "import tomllib; print(tomllib.load(open('$$dir/pyproject.toml', 'rb'))['project']['version'])"); \
+			name=$$(uv run --isolated --no-project --python 3.13 python -c "import sys, tomllib; print(tomllib.load(open(sys.argv[1], 'rb'))['project']['name'])" "$$dir/pyproject.toml") || exit 1; \
+			version=$$(uv run --isolated --no-project --python 3.13 python -c "import sys, tomllib; print(tomllib.load(open(sys.argv[1], 'rb'))['project']['version'])" "$$dir/pyproject.toml") || exit 1; \
 			echo "Verifying $$name==$$version from $(VERIFY_INDEX)"; \
 			uv run --isolated --no-project --python 3.13 --refresh-package "$$name" --index "$(VERIFY_INDEX)" --with "$$name==$$version" python -c "from importlib.metadata import version; assert version('$$name') == '$$version'"; \
 		fi; \
@@ -192,8 +192,8 @@ e2e-tests: build install
 containerize:
 	@for dir in $(SUBDIRS); do \
 		if [[ -f $$dir/Containerfile && (-f $$dir/pyproject.toml) ]]; then \
-			name=$$(uv run tomlq -r '.project.name' $$dir/pyproject.toml); \
-			version=$$(uv run tomlq -r '.project.version' $$dir/pyproject.toml); \
+			name=$$(uv run --isolated --no-project --python 3.13 python -c "import sys, tomllib; print(tomllib.load(open(sys.argv[1], 'rb'))['project']['name'])" "$$dir/pyproject.toml") || exit 1; \
+			version=$$(uv run --isolated --no-project --python 3.13 python -c "import sys, tomllib; print(tomllib.load(open(sys.argv[1], 'rb'))['project']['version'])" "$$dir/pyproject.toml") || exit 1; \
 			echo "Building container image for $$dir with version $$version"; \
 			cd $$dir && \
 				podman build -t $$name:$$version . && \
