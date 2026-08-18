@@ -15,7 +15,7 @@ SERVER_DIRS := $(filter-out $(COMMON_PROJECT_PATH),$(SUBDIRS))
 # Releasing a server also releases the common dependency first, even when a
 # single server is selected with `project=`.
 RELEASE_DIRS := $(if $(SERVER_DIRS),$(COMMON_PROJECT_PATH) $(SERVER_DIRS),$(COMMON_DIRS))
-COMMON_VERSION := $(shell python -c "import tomllib; print(tomllib.load(open('$(COMMON_PROJECT_PATH)/pyproject.toml', 'rb'))['project']['version'])")
+COMMON_VERSION := $(shell uv run --isolated --no-project --python 3.13 python -c "import tomllib; print(tomllib.load(open('$(COMMON_PROJECT_PATH)/pyproject.toml', 'rb'))['project']['version'])")
 
 PYPI_PUBLISH_URL := https://upload.pypi.org/legacy/
 PYPI_CHECK_URL := https://pypi.org/simple/
